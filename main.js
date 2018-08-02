@@ -57,3 +57,9 @@ newCoin.addBlock(new Block(2, "31/07/2018", {transaction: 1}));
 
 console.log(JSON.stringify(newCoin, null, 4));
 console.log("Checking Blockchain valid: " + newCoin.isChainValid());
+
+//Try to tamper the chain.
+newCoin.chain[1].data = {transaction: 100};
+newCoin.chain[1].hash = newCoin.chain[1].calculateHash();
+
+console.log("Checking Blockchain valid: " + newCoin.isChainValid());
