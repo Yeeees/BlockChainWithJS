@@ -17,6 +17,7 @@ class Block{
     }
 //Adding difficulty to mine a new block. More time consuming.
     mineBlock(difficulty){
+        //Only if the number of zero at the beginning of the hash code meets the number of difficulty, the while loop would be breaked.
         while(this.hash.substring(0,difficulty) !== Array(difficulty + 1).join("0")){
             this.nounce++;
             this.hash = this.calculateHash();
