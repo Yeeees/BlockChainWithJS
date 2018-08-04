@@ -1,10 +1,18 @@
 const SHA256 = require('crypto-js/sha256')
 
+class Transaction{
+    constructor(fromAddr,toAddr,amount){
+        this.fromAddr = fromAddr;
+        this.toAddr = toAddr;
+        this.amount = amount;
+    }
+}
+
 class Block{
-    constructor(index, timestamp, data, previousHash = ''){
-       this.index = index;
+    constructor(timestamp, transaction, previousHash = ''){
+       //this.index = index;
        this.timestamp = timestamp;
-       this.data = data;
+       this.transaction = transaction;
        this.previousHash = previousHash;
        this.hash = this.calculateHash();
        //Random number for proof of work, for each time the hash will be different.
@@ -13,7 +21,7 @@ class Block{
     }
 
     calculateHash(){
-        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nounce).toString();
+        return SHA256(this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nounce).toString();
     }
 //Adding difficulty to mine a new block. More time consuming.
     mineBlock(difficulty){
@@ -30,6 +38,8 @@ class Blockchain{
     constructor(){
         this.chain = [this.createGenesisBlock()];
         this.difficulty = 5;
+        this.pendingTransactions = [];
+        this.miningReward = 100;
     }
 
     createGenesisBlock(){
@@ -45,6 +55,32 @@ class Blockchain{
         //newBlock.hash = newBlock.calculateHash();
         newBlock.mineBlock(this.difficulty);
         this.chain.push(newBlock);
+    }
+
+    minePendingTransactions(miningRewardAddr){
+        let block = new Block(Date.now(), this.pendingTransactions);
+        block.mineBlock(this.difficulty);
+        console.log('Block mined');
+        this.chain.push(block);
+        this.pendingTransactions = [new Transaction(null, this.miningRewardAddr,this.miningReward)];
+    }
+
+    getBalanceOfAddress(address){
+        let balance = 0;
+
+        for(const block of this.chain){
+            for(const trans of block.transactions){
+                if(trans.fromAddress === address){
+                    balance -= trans.amount;
+                }
+
+                if(trans.toAddress === address){
+                    balance += trans.amount;
+                }
+            }
+        }
+
+        return balance;
     }
 
     isChainValid(){
