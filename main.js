@@ -37,7 +37,7 @@ class Block{
 class Blockchain{
     constructor(){
         this.chain = [this.createGenesisBlock()];
-        this.difficulty = 5;
+        this.difficulty = 2;
         this.pendingTransactions = [];
         this.miningReward = 100;
     }
@@ -65,16 +65,20 @@ class Blockchain{
         this.pendingTransactions = [new Transaction(null, this.miningRewardAddr,this.miningReward)];
     }
 
+    createTransaction(transaction){
+        this.pendingTransactions.push(transaction);
+    }
+
     getBalanceOfAddress(address){
         let balance = 0;
 
         for(const block of this.chain){
-            for(const trans of block.transactions){
-                if(trans.fromAddress === address){
+            for(const trans of block.transaction){
+                if(trans.fromAddr === address){
                     balance -= trans.amount;
                 }
 
-                if(trans.toAddress === address){
+                if(trans.toAddr === address){
                     balance += trans.amount;
                 }
             }
@@ -100,12 +104,18 @@ class Blockchain{
 }
 
 let newCoin = new Blockchain;
-newCoin.addBlock(new Block(1, "30/07/2018", "The new generated block"));
-newCoin.addBlock(new Block(2, "31/07/2018", {transaction: 1}));
-newCoin.addBlock(new Block(3, "2/08/2018", {transaction: 20}));
-console.log(JSON.stringify(newCoin, null, 4));
-console.log("Checking Blockchain valid: " + newCoin.isChainValid());
+// newCoin.addBlock(new Block(1, "30/07/2018", "The new generated block"));
+// newCoin.addBlock(new Block(2, "31/07/2018", {transaction: 1}));
+// newCoin.addBlock(new Block(3, "2/08/2018", {transaction: 20}));
+// console.log(JSON.stringify(newCoin, null, 4));
+// console.log("Checking Blockchain valid: " + newCoin.isChainValid());
 
+newCoin.createTransaction(new Transaction('Addr1','Addr2',100));
+newCoin.createTransaction(new Transaction('Addr2','Addr1',50));
+newCoin.minePendingTransactions('Addr1');
+console.log('Reward value: '+newCoin.getBalanceOfAddress('Addr1'));
+newCoin.minePendingTransactions('Addr2');
+console.log('Reward value: '+newCoin.getBalanceOfAddress('Addr2'));
 //Try to tamper the chain.
 newCoin.chain[1].data = {transaction: 100};
 newCoin.chain[1].hash = newCoin.chain[1].calculateHash();
